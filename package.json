@@ -5,6 +5,7 @@
   "description": "Home Downsize marketing site with a Cloudflare Pages contact function.",
   "scripts": {
     "dev": "wrangler pages dev .",
+    "build": "echo \"No build step needed for static HTML\"",
     "deploy": "wrangler pages deploy ."
   },
   "devDependencies": {
