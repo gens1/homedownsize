@@ -1,0 +1,13 @@
+{
+  "name": "homedownsize",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Home Downsize marketing site with a Cloudflare Pages contact function.",
+  "scripts": {
+    "dev": "wrangler pages dev .",
+    "deploy": "wrangler pages deploy ."
+  },
+  "devDependencies": {
+    "wrangler": "^3.90.0"
+  }
+}
