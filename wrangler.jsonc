@@ -5,5 +5,10 @@
   "assets": {
     "directory": "./public",
     "binding": "ASSETS"
+  },
+  // Non-secret config. RESEND_API_KEY is a secret: set it with `npx wrangler secret put RESEND_API_KEY`.
+  "vars": {
+    "CONTACT_TO": "hello@homedownsize.co.nz",
+    "CONTACT_FROM": "website@homedownsize.co.nz"
   }
 }
