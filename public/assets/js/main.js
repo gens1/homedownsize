@@ -159,4 +159,12 @@
   /* Footer year */
   var year = document.getElementById('year');
   if (year) year.textContent = new Date().getFullYear();
+
+  /* "Who we are" badge: years of experience since 2021 */
+  var START_YEAR = 2021;
+  var yearsEl = document.getElementById('years-experience');
+  if (yearsEl) {
+    var yearsCount = new Date().getFullYear() - START_YEAR;
+    yearsEl.textContent = yearsCount + (yearsCount === 1 ? ' Year' : ' Years');
+  }
 })();
