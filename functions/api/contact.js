@@ -1,8 +1,8 @@
 /**
- * Cloudflare Pages Function — handles POST /api/contact
+ * Contact form handler for POST /api/contact (called from src/index.js)
  * Sends the contact form as an email via Resend (https://resend.com).
  *
- * Required environment variables (set in the Cloudflare Pages dashboard):
+ * Required environment variables (set on the Worker in the Cloudflare dashboard):
  *   RESEND_API_KEY  - your Resend API key (mark as "encrypted / secret")
  *   CONTACT_TO      - the inbox that should receive enquiries, e.g. hello@homedownsize.co.nz
  *   CONTACT_FROM    - a verified sender on your Resend domain, e.g. website@homedownsize.co.nz

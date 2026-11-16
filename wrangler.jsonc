@@ -1,7 +1,9 @@
 {
   "name": "homedownsize",
+  "main": "src/index.js",
   "compatibility_date": "2026-09-29",
   "assets": {
-    "directory": "./public"
+    "directory": "./public",
+    "binding": "ASSETS"
   }
 }

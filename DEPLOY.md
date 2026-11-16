@@ -1,63 +1,77 @@
-# Home Downsize — deploy to Cloudflare Pages
+# Home Downsize — deploy to Cloudflare Workers
 
-This site is a static front end plus one Cloudflare Pages Function that emails the
-contact form (`functions/api/contact.js` → served at `/api/contact`).
+The site runs as a Cloudflare Worker with static assets:
 
-## 1. Choose an email provider (Resend)
+- `public/` holds the static site (HTML, CSS, JS, images).
+- `src/index.js` is the Worker entry point. It sends `POST /api/contact` to the
+  contact form handler and serves everything else from `public/`.
+- `functions/api/contact.js` validates the form and emails it through Resend.
+- `wrangler.jsonc` is the only Wrangler config file.
 
-The function sends mail through [Resend](https://resend.com) — free tier is 100 emails/day.
+## 1. Set up Resend (email provider)
+
+The contact form sends mail through [Resend](https://resend.com). The free tier allows 100 emails/day.
 
 1. Sign up at resend.com.
-2. Add and verify your domain `homedownsize.co.nz` (Resend gives you DNS records;
-   add them in your Cloudflare DNS dashboard). Verifying the domain lets you send
-   from an address like `website@homedownsize.co.nz`.
-3. Create an API key (Resend dashboard → API Keys).
+2. Add and verify the domain `homedownsize.co.nz` (Resend → Domains). Resend gives
+   you DNS records to add in your Cloudflare DNS dashboard. Once it's verified you
+   can send from an address like `website@homedownsize.co.nz`.
+3. Create an API key (Resend → API Keys) with **Sending access**. Copy it straight
+   away, because Resend only shows it once.
 
-> Prefer a different provider (SendGrid, Postmark, Mailgun, etc.)? Only the `fetch`
-> call inside `contact.js` needs to change — the rest of the flow is identical.
+> To test before the domain is verified, use `onboarding@resend.dev` as
+> `CONTACT_FROM`. Resend will then only deliver to your Resend account's email,
+> so `CONTACT_TO` must be that address.
 
-## 2. Deploy the site to Pages
+## 2. Set the Worker's variables
 
-Option A — connect your Git repo:
-1. Cloudflare dashboard → Workers & Pages → Create → Pages → Connect to Git.
-2. Pick this repo. Build command: leave blank. Build output directory: `/` (root).
-3. Deploy.
+In the Cloudflare dashboard, go to Workers & Pages → **homedownsize** → Settings →
+**Variables and Secrets**, and add:
 
-Option B — direct upload with Wrangler:
+| Name             | Example value                | Notes                                      |
+|------------------|------------------------------|--------------------------------------------|
+| `RESEND_API_KEY` | `re_xxxxxxxx`                | Type **Secret**                            |
+| `CONTACT_TO`     | `hello@homedownsize.co.nz`   | The inbox where enquiries are delivered    |
+| `CONTACT_FROM`   | `website@homedownsize.co.nz` | Must be on a domain verified in Resend     |
+
+You can set the secret from the terminal instead (run it in the project folder):
+```
+npx wrangler secret put RESEND_API_KEY
+```
+
+Replies to an enquiry go to the visitor, because the handler sets `reply_to` to
+the email address they entered.
+
+## 3. Deploy
+
+Option A — Git: if the Worker is connected to this repo, pushing to `main`
+deploys it. Under Settings → Build, leave the root directory blank (`/`). If it's
+set to `/public`, the build can't find `wrangler.jsonc` and fails with
+"Required Worker name missing".
+
+Option B — from your machine:
 ```
 npm install
-npx wrangler pages deploy .
+npm run deploy
 ```
-
-## 3. Set environment variables
-
-In the Pages project → Settings → Environment variables, add these for
-**Production** (and Preview if you want):
-
-| Name             | Example value                        | Notes                     |
-|------------------|--------------------------------------|---------------------------|
-| `RESEND_API_KEY` | `re_xxxxxxxx`                        | Mark as **Secret**        |
-| `CONTACT_TO`     | `hello@homedownsize.co.nz`           | Where enquiries land      |
-| `CONTACT_FROM`   | `website@homedownsize.co.nz`         | Must be on a verified domain |
-
-Redeploy after adding variables so the Function picks them up.
 
 ## 4. Custom domain
 
-Pages project → Custom domains → add `homedownsize.co.nz`. Since your DNS is already
-on Cloudflare, this is a couple of clicks.
+Go to Worker → Settings → **Domains & Routes** and add `homedownsize.co.nz`. The DNS is
+already on Cloudflare, so this only takes a couple of clicks.
 
 ## Local development
 
-Run the site + Function locally with Wrangler:
 ```
 npm install
 npm run dev
 ```
-Then open the printed `http://localhost:8788`. To test real email locally, create a
-`.dev.vars` file (git-ignored) with:
+Then open the URL that Wrangler prints (usually `http://localhost:8787`). To send real email
+locally, create a `.dev.vars` file in the project folder (it's already git-ignored):
 ```
 RESEND_API_KEY=re_xxxxxxxx
 CONTACT_TO=you@example.com
 CONTACT_FROM=website@homedownsize.co.nz
 ```
+Without it, submitting the form returns "Email service is not configured yet."
+That confirms the handler is running.
